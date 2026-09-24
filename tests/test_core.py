@@ -162,7 +162,9 @@ class TestKillSwitch:
         assert "INTEGRIDAD" in message.upper()
 
         with pytest.raises(ks.KillSwitchIntegrityError):
-            ks.integrity_gate(strict=True)
+            ks.integrity_gate(strict=True, file_path=target, hash_path=seal)
+        # En modo no estricto, avisa pero deja continuar.
+        assert ks.integrity_gate(strict=False, file_path=target, hash_path=seal) is False
 
     def test_missing_seal_is_detected(self, tmp_path: Path) -> None:
         target = tmp_path / "killswitch.py"

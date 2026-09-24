@@ -171,14 +171,24 @@ def verify_integrity(
     return True, f"Kill-switch íntegro ({actual[:16]}...)"
 
 
-def integrity_gate(strict: bool | None = None) -> bool:
+def integrity_gate(
+    strict: bool | None = None,
+    file_path: str | os.PathLike[str] | None = None,
+    hash_path: str | os.PathLike[str] | None = None,
+) -> bool:
     """Puerta de arranque: verifica la integridad y aborta si el modo es estricto.
 
     Lanza `KillSwitchIntegrityError` cuando ``strict`` es True y la verificación
     falla. Si ``strict`` es False, se limita a registrar una advertencia.
+
+    Los parámetros opcionales ``file_path`` y ``hash_path`` permiten verificar
+    otros pares archivo/sello (por ejemplo, en la batería de pruebas).
     """
     strict = cfg.KILLSWITCH_INTEGRITY_STRICT if strict is None else strict
-    ok, message = verify_integrity()
+    ok, message = verify_integrity(
+        file_path if file_path is not None else cfg.KILLSWITCH_FILE,
+        hash_path if hash_path is not None else cfg.KILLSWITCH_HASH_FILE,
+    )
     if ok:
         logger.info(message)
         return True
