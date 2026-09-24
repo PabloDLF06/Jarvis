@@ -115,6 +115,14 @@ if errorlevel 1 (
     exit /b 1
 )
 echo %PASO_OK% Librerias instaladas.
+
+echo   Instalando el detector de voz de Google ^(opcional^)...
+"%VPY%" -m pip install webrtcvad-wheels --quiet --disable-pip-version-check
+if errorlevel 1 (
+    echo %PASO_AVISO% No habia una version compatible: JARVIS usara su propio detector de voz.
+) else (
+    echo %PASO_OK% Detector de voz de Google instalado.
+)
 echo.
 
 rem ---------------------------------------------------------------------------

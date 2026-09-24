@@ -22,6 +22,10 @@ faster-whisper>=1.0.3            # STT local (modelo base, CTranslate2 int8)
 openwakeword>=0.6.0              # Wake word "Jarvis" (<1% CPU)
 onnxruntime>=1.17.1              # Motor de inferencia ONNX (wake word + TTS)
 tqdm>=4.66.0                     # Barras de progreso en descargas de modelos
+# Detector de voz de Google (opcional, mejora el VAD con ventiladores/teclados).
+# install.bat lo intenta aparte: si no hay rueda para tu Python, JARVIS usa su
+# propio detector de energía sin perder ninguna función.
+# webrtcvad-wheels>=2.0.14
 
 # ---------------------------------------------------------------------------
 # 3) TEXT-TO-SPEECH NEURAL EN ESPAÑOL (con redundancia en cascada)
