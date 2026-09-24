@@ -1,0 +1,6 @@
+# ============================================================
+#  JARVIS — Sello de integridad del kill-switch
+#  Si este hash no coincide con safety/killswitch.py, JARVIS
+#  se negará a arrancar. Regenerar: python main.py --sellar-seguridad
+# ============================================================
+2bf07c33f4f1969317df29a1cab12ffd7f2c17e950911e5c7924d7fbe38fc260  killswitch.py
