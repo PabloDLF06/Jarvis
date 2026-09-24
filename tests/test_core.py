@@ -1135,8 +1135,55 @@ class TestCommandParsing:
         jarvis = Jarvis(build_parser().parse_args(["--texto", "--forzar"]))
         scheduled: list = []
         monkeypatch.setattr("main.threading.Timer", lambda *a, **k: type("T", (), {"start": lambda self: scheduled.append(a)})())
-        jarvis.handle_command("Jarvis, apágate")
+        reply = jarvis.handle_command("Jarvis, apágate")
         assert scheduled, "Debe programarse el apagado"
+        assert reply and "Hasta luego" in reply
+
+        jarvis.handle_command("Jarvis, adiós")
+        assert len(scheduled) >= 2, "Una despedida sin «apágate» también cierra"
+
+    def test_wake_word_is_stripped_from_orders(self) -> None:
+        from main import Jarvis
+
+        assert Jarvis._strip_wake_word("Jarvis, abre el bloc de notas") == "abre el bloc de notas"
+        assert Jarvis._strip_wake_word("Oye Jarvis: ¿qué hora es?") == "¿qué hora es?"
+        assert Jarvis._strip_wake_word("jarvis abre Comet") == "abre Comet"
+        assert Jarvis._strip_wake_word("Jarvis") == ""
+        assert Jarvis._strip_wake_word("abre Comet") == "abre Comet"
+
+    def test_open_app_with_wake_word(self, monkeypatch) -> None:
+        from main import Jarvis, build_parser
+
+        jarvis = Jarvis(build_parser().parse_args(["--texto", "--forzar"]))
+        jarvis._bootstrap_models()
+        jarvis._bootstrap_senses()
+        launched: list[str] = []
+
+        def fake_launch(name: str):
+            launched.append(name)
+            return True, "KNOW_APPS"
+
+        monkeypatch.setattr(jarvis.media, "launch_app", fake_launch)
+        reply = jarvis.handle_command("Jarvis, abre el bloc de notas")
+        assert launched == ["bloc de notas"], "El saludo no debe confundir a la habilidad"
+        assert reply and "bloc de notas" in reply
+
+    def test_web_search_keeps_the_query_intact(self, monkeypatch) -> None:
+        from main import Jarvis, build_parser
+
+        jarvis = Jarvis(build_parser().parse_args(["--texto", "--forzar"]))
+        jarvis._bootstrap_models()
+        jarvis._bootstrap_senses()
+        urls: list[str] = []
+
+        def fake_open(url: str, *args, **kwargs):
+            urls.append(url)
+            return True, "Comet"
+
+        monkeypatch.setattr(jarvis.media, "open_url", fake_open)
+        reply = jarvis.handle_command("Jarvis, busca en internet recetas de tortilla")
+        assert urls and "recetas%20de%20tortilla" in urls[0], urls
+        assert reply and "recetas" in reply
 
 
 # =============================================================================

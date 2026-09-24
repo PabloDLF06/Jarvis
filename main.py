@@ -388,11 +388,17 @@ class Jarvis:
         modelo -> conversación. Así lo simple responde en milisegundos y lo
         complejo se reserva para cuando hace falta de verdad.
         """
-        clean = " ".join(str(text or "").split())
-        if not clean:
+        original = " ".join(str(text or "").split())
+        if not original:
             return None
+        logger.info("Orden de Pablo: %s", original)
+
+        # Se quita el saludo inicial («Jarvis, …») para interpretar la orden:
+        # las habilidades deben recibir el mandato, no el nombre del asistente.
+        clean = self._strip_wake_word(original)
+        if not clean:
+            return cfg.PHRASES["wake"][0]
         normalized = normalize_text(clean)
-        logger.info("Orden de Pablo: %s", clean)
 
         # 0) Seguridad y control.
         if self.killswitch is not None and self.killswitch.is_tripped():
@@ -433,6 +439,35 @@ class Jarvis:
         return self._handle_chat(clean)
 
     # --- Habilidades locales ----------------------------------------------
+
+    @staticmethod
+    def _strip_wake_word(text: str) -> str:
+        """Quita el saludo inicial («Jarvis, …») conservando tildes y mayúsculas.
+
+        >>> Jarvis._strip_wake_word("Jarvis, abre el bloc de notas")
+        'abre el bloc de notas'
+        >>> Jarvis._strip_wake_word("Oye Jarvis: ¿qué hora es?")
+        '¿qué hora es?'
+        >>> Jarvis._strip_wake_word("Jarvis")
+        ''
+        """
+        stripped = str(text or "").strip()
+        normalized, mapping = normalize_text_map(stripped)
+        for alias in sorted(cfg.WAKE_WORD_ALIASES, key=len, reverse=True):
+            alias_norm = normalize_text(alias)
+            if not alias_norm:
+                continue
+            if normalized == alias_norm:
+                return ""
+            if normalized.startswith(alias_norm + " "):
+                start = len(alias_norm) + 1
+                origin = mapping[start] if start < len(mapping) else len(stripped)
+                # Recupera los signos de apertura que la normalización borró
+                # («¿», «¡»): la orden de Pablo se devuelve tal cual la dijo.
+                while origin > 0 and stripped[origin - 1] in " ¿¡":
+                    origin -= 1
+                return stripped[origin:].lstrip(" ,.:;")
+        return stripped
 
     def _handle_time(self, text: str) -> str | None:
         """¿Qué hora es?"""
@@ -569,11 +604,14 @@ class Jarvis:
         if not any(marker in normalized for marker in markers):
             return None
         query = text
+        _, mapping = normalize_text_map(text)
         for marker in ("busca en internet", "busca en google", "busca en la web", "buscar en internet",
                        "buscame", "busca", "abre la web", "abre la pagina", "navega a"):
             index = normalized.find(marker)
             if index >= 0:
-                query = text[index + len(marker):].strip(" ,.:;¡!¿?") or text
+                start = index + len(marker)
+                origin = mapping[start] if start < len(mapping) else len(text)
+                query = text[origin:].strip(" ,.:;¡!¿?") or text
                 break
         if self.media is None or not query:
             return "No he podido buscar eso, Pablo."
@@ -597,6 +635,12 @@ class Jarvis:
                 break
         if not target or len(target.split()) > 4:
             return None
+        # «abre el bloc de notas» -> «bloc de notas» (los artículos no son parte
+        # del nombre de la aplicación y estorban al buscarla).
+        for article in ("el ", "la ", "los ", "las ", "un ", "una "):
+            if normalize_text(target).startswith(article):
+                target = target[len(article):].strip()
+                break
         lower = normalize_text(target)
         known = any(lower == alias or lower in alias or alias in lower for alias in cfg.KNOWN_APPS)
         if not known and lower not in ("comet", "spotify", "navegador"):
@@ -649,7 +693,9 @@ class Jarvis:
     def _handle_goodbye(self, text: str) -> str | None:
         """Cerrar JARVIS por voz."""
         normalized = normalize_text(text)
-        if not any(w in normalized for w in ("apagate", "cierra jarvis", "cerrar jarvis", "adios jarvis", "hasta luego jarvis")):
+        if not any(w in normalized for w in ("apagate", "apaga jarvis", "cierra jarvis",
+                                             "cerrar jarvis", "adios", "hasta luego",
+                                             "hasta pronto", "me voy")):
             return None
         # La despedida la pronuncia el motor de voz al recibir esta respuesta;
         # el apagado se programa con margen para que termine de sonar.
