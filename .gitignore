@@ -1,0 +1,59 @@
+# ============================================================
+#  JARVIS — archivos que NUNCA deben subirse al repositorio
+# ============================================================
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Modelos descargados (pesados: Whisper, Kokoro, Piper, openWakeWord)
+models/
+!models/.gitkeep
+
+# Espacio de trabajo del constructor de apps (código generado por Pablo/JARVIS)
+workspace/
+!workspace/.gitkeep
+
+# Registros y datos en tiempo de ejecución
+logs/
+*.log
+.cache/
+runtime/
+*.pid
+*.lock
+
+# Estado local de JARVIS
+state/
+memory.json
+conversation_history.jsonl
+
+# Configuración local del usuario (secretos/ajustes personales)
+.env
+local_config.py
+config.local.py
+
+# Sistema operativo / editores
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Distribución
+build/
+dist/
+*.egg-info/

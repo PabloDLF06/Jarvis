@@ -1,0 +1,54 @@
+# ============================================================================
+#  JARVIS — Dependencias completas
+#  Instalación automática: ejecuta  install.bat  (no toques este archivo).
+#
+#  Filosofía: 100% local, 100% privado, 0 € de coste de API.
+#  Ningún paquete de esta lista envía tus datos a la nube.
+# ============================================================================
+
+# ---------------------------------------------------------------------------
+# 1) NÚCLEO (imprescindible)
+# ---------------------------------------------------------------------------
+requests>=2.31.0,<3.0.0          # Cliente HTTP para la API local de Ollama
+numpy>=1.26.0,<3.0.0             # DSP de audio, doble palmada, coordenadas
+psutil>=5.9.0                    # Monitorización de RAM del sistema
+
+# ---------------------------------------------------------------------------
+# 2) AUDIO DE ENTRADA (micrófono) Y VOZ
+# ---------------------------------------------------------------------------
+sounddevice>=0.4.6               # Captura/reproducción de audio (PortAudio)
+soundfile>=0.12.1                # Lectura/escritura de WAV para TTS
+faster-whisper>=1.0.3            # STT local (modelo base, CTranslate2 int8)
+openwakeword>=0.6.0              # Wake word "Jarvis" (<1% CPU)
+onnxruntime>=1.17.1              # Motor de inferencia ONNX (wake word + TTS)
+tqdm>=4.66.0                     # Barras de progreso en descargas de modelos
+
+# ---------------------------------------------------------------------------
+# 3) TEXT-TO-SPEECH NEURAL EN ESPAÑOL (con redundancia en cascada)
+# ---------------------------------------------------------------------------
+kokoro-onnx>=0.4.9               # Motor principal: Kokoro-82M (voz ef_dora)
+piper-tts>=1.2.0                 # Motor alternativo: Piper (es_ES)
+pyttsx3>=2.90                    # Último recurso: voz SAPI de Windows (offline)
+
+# ---------------------------------------------------------------------------
+# 4) PERCEPCIÓN DE PANTALLA Y AUTOMATIZACIÓN
+# ---------------------------------------------------------------------------
+mss>=9.0.1                       # Captura de pantalla multi-monitor ultrarrápida
+Pillow>=10.2.0                   # Procesado y compresión de imágenes
+pyautogui>=0.9.54                # Ratón y teclado sintéticos
+pynput>=1.7.6                    # Hooks globales (hotkey + detección de pánico)
+keyboard>=0.13.5                 # Atajo global Ctrl+Shift+Space
+pygetwindow>=0.0.9               # Gestión de ventanas (foco, activar app)
+pyperclip>=1.8.2                 # Pegado seguro de texto largo generado
+
+# ---------------------------------------------------------------------------
+# 5) INTERFAZ HOLOGRÁFICA (HUD transparente click-through)
+# ---------------------------------------------------------------------------
+PyQt6>=6.6.0                     # GHOST HUD: cápsula + marco de neón
+PyQt6-Qt6>=6.6.0
+PyQt6-sip>=13.6.0
+
+# ---------------------------------------------------------------------------
+# 6) NÚCLEO DE PRUEBAS (usado por el motor de auto-programación)
+# ---------------------------------------------------------------------------
+pytest>=8.0.0
